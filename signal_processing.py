@@ -12,7 +12,7 @@ with open('data/2aHc688_ICP.pkl', 'rb') as f:
 
     signal_1_data = data[1]['signal']                   # signal data
     signal_1_fs = data[1]['fs']                         # sampling frequency
-    signal_1_invalid_flag = data[1]['invalid_flag']     # sampling frequency
+    signal_1_invalid_flag = data[1]['invalid_flag']     # invalid flag
     signal_1_time_start = data[1]['time_start']         # time start
 
     period = 1 / signal_1_fs                                                                # calculate period based on sampling frequency
