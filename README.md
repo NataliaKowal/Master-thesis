@@ -1,4 +1,4 @@
 # Master Thesis
 This is my master thesis 
-## Tytuł: ...
+## Title: Joint analysis of slow waves and pulse waveform of intracranial pressure
 
