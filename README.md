@@ -14,11 +14,13 @@ To run this code, you need the following Python libraries:
 - numpy
 
 You can install the missing libraries using pip:
+
     pip install matplotlib numpy
 
 ## Usage Instructions
 Make sure you have the file 2aHc688_ICP.pkl in the data directory.
 Run the Python script:
+
     python main.py
 
 ## Script Description
