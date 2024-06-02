@@ -40,11 +40,11 @@ Plots the magnitude of the Fourier transform of the interpolated signal in the f
 
 ## Sample Results
 
-### <strong> Time-Domain Signal</strong>
+### <strong> FFT</strong>
 ![fft](./img/fft.png)
 
-### <strong> Interpolated Time-Domain Signal </strong>
+### <strong> Time-Domain Signal </strong>
 ![Figure_1](./img/Figure_1.png)
 
-### <strong> Frequency Spectrum of the Interpolated Signal </strong>
+### <strong> Interpolated Time-Domain Signal </strong>
 ![Figure_2](./img/Figure_2.png)
