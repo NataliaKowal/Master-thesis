@@ -9,7 +9,6 @@ This Python project processes signals stored in a .pkl file, interpolates them t
 ## Requirements
 To run this code, you need the following Python libraries:
 - pickle
-- pathlib
 - matplotlib
 - numpy
 
