@@ -1,5 +1,5 @@
 # Master Thesis
-This is my master thesis (in progress)
+This is my master thesis (in progress).
 ## Title
 > [!IMPORTANT] 
 > Joint analysis of slow waves and pulse waveform of intracranial pressure
