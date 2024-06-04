@@ -34,31 +34,31 @@ Run the Python script:
 
 ## Script Description
 
-`<strong>`1.  Loading Data:`</strong>`
+<strong>1.  Loading Data:</strong>
 The script loads data from the 2aHc688_ICP.pkl file using the pickle library.
 
-`<strong>` 2. Signal Processing: `</strong>`
+<strong>2. Signal Processing: </strong>
 It retrieves signal data, sampling frequency, error flag, and start time.
 Calculates the sampling period and signal end time.
 Creates time arrays for the original and interpolated signals.
 Interpolates the signal to the desired sampling frequency (100 Hz).
 Performs a Fourier transform on the interpolated signal.
 
-`<strong>` 3. Visualization: `</strong>`
+<strong> 3. Visualization: </strong>
 Plots the original time-domain signal.
 Plots the interpolated time-domain signal.
 Plots the magnitude of the Fourier transform of the interpolated signal in the frequency domain.
 
 ## Sample Results
 
-### `<strong>` FFT`</strong>`
+### <strong> FFT</strong>
 
 ![fft](./img/fft.png)
 
-### `<strong>` Time-Domain Signal `</strong>`
+### <strong> Time-Domain Signal </strong>
 
 ![Figure_1](./img/Figure_1.png)
 
-### `<strong>` Interpolated Time-Domain Signal `</strong>`
+### <strong> Interpolated Time-Domain Signal </strong>
 
 ![Figure_2](./img/Figure_2.png)
