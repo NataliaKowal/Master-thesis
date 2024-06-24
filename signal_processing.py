@@ -310,13 +310,14 @@ def main():
     windowed_fft, window_ranges = calculate_windowed_fft(signal_1_data, window_size, step_size)
 
     # Zapisz poszczególne okna jako obrazy
-    print("Tworzenie wykresów dla okienkowego FFT.")
+    print("Tworzenie wykresów dla okienkowego FFT.", end='', flush=True)
     for i in range(len(windowed_fft)):
+        print(".", end='', flush=True)
         plot_combined(windowed_fft[i], target_ft, signal_1_interpolated, window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/window/{i}.png")
 
     # Stworzenie gif'a na podstawie stworzonych wykresów dla okienkowego FFT
-    print("Tworzenie GIF dla okienkowego FFT.")
-    create_gif("./img/window/", "./window_fft.gif", 0.1)
+    print("\nTworzenie GIF dla okienkowego FFT.")
+    create_gif("./img/window/", "./resoult/window_fft.gif", 0.1)
 
     # Obliczenie adaptacyjnego okienkowego fft
     print("Obliczenie adaptacyjnego okienkowego FFT.")
@@ -326,22 +327,23 @@ def main():
     adaptive_windowed_fft, adaptive_window_ranges = calculate_adaptive_windowed_fft(signal_1_data, window_min_size, window_max_size, window_max_size)
 
     # Zapisz poszczególne okna jako obrazy
-    print("Tworzenie wykresów dla adaptacyjnego okienkowego FFT.")
+    print("Tworzenie wykresów dla adaptacyjnego okienkowego FFT.", end='', flush=True)
     for i in range(len(adaptive_windowed_fft)):
+        print(".", end='', flush=True)
         plot_combined(adaptive_windowed_fft[i], target_ft, signal_1_interpolated, adaptive_window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/adaptive_window/{i}.png")
 
     # Stworzenie gif'a na podstawie stworzonych wykresów dla adaptacyjnego okienkowego FFT
-    print("Tworzenie GIF dla adaptacyjnego okienkowego FFT.")
-    create_gif("./img/adaptive_window/", "./adaptive_window_fft.gif", 0.1)
+    print("\nTworzenie GIF dla adaptacyjnego okienkowego FFT.")
+    create_gif("./img/adaptive_window/", "./resoult/adaptive_window_fft.gif", 0.1)
 
     # Rysujowanie oryginalnego sygnału
-    plot_signal(current_timestamps, signal_1_data, "Oryginal Signal 1 in time domain", "time", "value", False)
+    plot_signal(current_timestamps, signal_1_data, "Oryginal Signal 1 in time domain", "time", "value", False, "./resoult/oryginal_signal.png")
     
     # Rysujowanie interpolowanego sygnału
-    plot_signal(target_timestamps, signal_1_interpolated, "Interpolated Signal 1 in time domain", "time", "value", False)
+    plot_signal(target_timestamps, signal_1_interpolated, "Interpolated Signal 1 in time domain", "time", "value", False, "./resoult/interpolated_signal.png")
     
     # Rysujowanie FFT interpolowanego sygnału
-    plot_fft(signal_fft, target_ft, "Interpolated Signal 1 in frequency domain", "frequency", "value", False)
+    plot_fft(signal_fft, target_ft, "Interpolated Signal 1 in frequency domain", "frequency", "value", False, "./resoult/classic_fft.png")
 
 # Uruchomienie głównej funkcji skryptu
 if __name__ == "__main__":
