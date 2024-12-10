@@ -1,8 +1,9 @@
 import pickle
 import matplotlib.pyplot as plt
-from numpy import abs, arange, interp, ceil, int64
-from numpy.fft import fft
+from numpy import abs, arange, interp, ceil, int64, square, where, trapz
+from numpy.fft import fft, fftfreq
 import os
+import sys
 from PIL import Image
 
 def load_data(file_path):
@@ -16,9 +17,12 @@ def load_data(file_path):
     #### Returns:
      - dict: Załadowane dane.
     """
-    with open(file_path, 'rb') as f:    # Otwarcie pliku 
-        data = pickle.load(f)           # wczytanie danych
-    return data
+    try:
+        with open(file_path, 'rb') as f:    # Otwarcie pliku 
+            data = pickle.load(f)           # wczytanie danych
+        return data
+    except:
+        return None
 
 def calculate_timestamps(signal, time_start, sampling_frequency):
     """
@@ -33,7 +37,7 @@ def calculate_timestamps(signal, time_start, sampling_frequency):
     #### Returns:
      - numpy.ndarray: Tablica znaczników czasowych.
     """
-    period = 1 / sampling_frequency                     # Oblicznie okresu na podtawie częstotliwości
+    period = 1 / sampling_frequency                     # Oblicznie okresu na podstawie częstotliwości
     time_stop = time_start + len(signal) * period       # Obliczenie końcowego znacznika czasowego
     timestamps = arange(time_start, time_stop, period)  # Obliczenie znaczników czasowych za pomocą numpy.arrange
     return timestamps
@@ -76,17 +80,21 @@ def plot_signal(timestamps, signal, title, xlabel, ylabel, show_plot = True, sav
     plt.ylabel(ylabel)              # Dodanie opisu osi Y
     if show_plot:                   # Jeśli trzeba pokaż wykres
         plt.show()
-    if save_path != None:           # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+    if save_path != None:                           # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+        output_dir = os.path.dirname(save_path)     # Stwórz folder jeśli nie istnieje
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         plt.savefig(save_path)
     plt.close()                     # Zamknięcie figury
 
-def plot_fft(signal, sampling_frequency, title, xlabel, ylabel, show_plot = True, save_path = None):
+def plot_fft(signal_fft, signal_fft_frequency, sampling_frequency, title, xlabel, ylabel, show_plot = True, save_path = None):
     """
     #### Summary
     Rysuje FFT sygnału w dziedzinie częstotliwości.
 
     #### Args:
-     - signal (numpy.ndarray): Dane sygnału.
+     - signal_fft (numpy.ndarray): fft sygnału.
+     - signal_fft_frequency (numpy.ndarray): częstotliwość dla fft.
      - sampling_frequency (float): Częstotliwość próbkowania sygnału.
      - title (str): Tytuł wykresu.
      - xlabel (str): Etykieta osi X.
@@ -95,16 +103,52 @@ def plot_fft(signal, sampling_frequency, title, xlabel, ylabel, show_plot = True
      - save_path (str): Ścieżka do zapisania wykresu.
     """
     plt.figure(figsize=(8, 6))              # Inicjalizacja figury
-    plt.plot(abs(signal))                   # Wykres dla FFT
+    plt.plot(signal_fft[1], abs(signal_fft[0]))                   # Wykres dla FFT z określoną częstotliwością
     plt.title(title)                        # Dodatnie tytułu
     plt.xlabel(xlabel)                      # Dodanie opisu osi X
     plt.ylabel(ylabel)                      # Dodanie opisu osi Y
-    plt.xlim([0, sampling_frequency])       # Ograniczenie osi X
+    plt.xlim([-signal_fft_frequency/2, sampling_frequency/2])       # Ograniczenie osi X
     if show_plot:                           # Jeśli trzeba pokaż wykres
         plt.show()
-    if save_path != None:                   # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+    if save_path != None:                           # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+        output_dir = os.path.dirname(save_path)     # Stwórz folder jeśli nie istnieje
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         plt.savefig(save_path)
     plt.close()                             # Zamknięcie figury
+
+def plot_psd(signal_psd, signal_psd_frequency, sampling_frequency, x_lim, y_lim, title, xlabel, ylabel, show_plot = True, save_path = None):
+    """
+    #### Summary
+    Rysuje PSD sygnału w dziedzinie częstotliwości.
+
+    #### Args:
+     - signal_psd (numpy.ndarray): fft sygnału.
+     - signal_psd_frequency (numpy.ndarray): częstotliwość dla fft.
+     - sampling_frequency (float): Częstotliwość próbkowania sygnału.
+     - x_lim (min, max): Min oraz Max dla osi X
+     - y_lim (min, max): Min oraz Max dla osi Y
+     - title (str): Tytuł wykresu.
+     - xlabel (str): Etykieta osi X.
+     - ylabel (str): Etykieta osi Y.
+     - show_plot (bool): Pokaż wykres.
+     - save_path (str): Ścieżka do zapisania wykresu.
+    """
+    plt.figure(figsize=(8, 6))              # Inicjalizacja figury
+    plt.plot(signal_psd_frequency, signal_psd)                   # Wykres dla PSD z określoną częstotliwością
+    plt.title(title)                        # Dodatnie tytułu
+    plt.xlabel(xlabel)                      # Dodanie opisu osi X
+    plt.ylabel(ylabel)                      # Dodanie opisu osi Y
+    plt.xlim(x_lim)                         # Ograniczenie osi X
+    plt.ylim(y_lim)                         # Ograniczenie osi Y
+    if show_plot:                           # Jeśli trzeba pokaż wykres
+        plt.show()
+    if save_path != None:                           # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+        output_dir = os.path.dirname(save_path)     # Stwórz folder jeśli nie istnieje
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        plt.savefig(save_path)
+    plt.close()    
 
 def plot_combined(signal_fft, sampling_frequency, signal, window_ranges, title, xlabel, ylabel, show_plot = True, save_path = None):
     """
@@ -112,7 +156,7 @@ def plot_combined(signal_fft, sampling_frequency, signal, window_ranges, title, 
     Rysuje FFT sygnału w dziedzinie częstotliwości, a poniżej rysuje okno dla którego wykonano fft.
 
     #### Args:
-     - `signal_fft` (numpy.ndarray): Dane sygnału w dziedzinie częstotliwości.
+     - `signal_fft` (tuple of numpy.ndarray and numpy.ndarray): Dane sygnału w dziedzinie częstotliwości wraz z odpowiadającą częstotliwością.
      - `sampling_frequency` (float): Częstotliwość próbkowania sygnału.
      - `signal` (numpy.ndarray): Dane sygnału.
      - `window_ranges` (touple(int, int)): Zakresy dla okna dla FFT.
@@ -124,11 +168,11 @@ def plot_combined(signal_fft, sampling_frequency, signal, window_ranges, title, 
     """
     plt.figure(figsize=(8, 6))          # Inicjalizacja figury 
     plt.subplot(2, 1, 1)                # Pierwszy wykres - fft
-    plt.plot(abs(signal_fft))           # Wykres dla FFT
+    plt.plot(signal_fft[1], abs(signal_fft[0]))        # Wykres dla FFT z poprawną częstotliwością w Hz
     plt.title(title)                    # Dodatnie tytułu
     plt.xlabel(xlabel)                  # Dodanie opisu osi X
     plt.ylabel(ylabel)                  # Dodanie opisu osi Y
-    plt.xlim([0, sampling_frequency])   # Ograniczenie osi X
+    plt.xlim([-sampling_frequency/2, sampling_frequency/2])   # Ograniczenie osi X
 
     plt.subplot(2, 1, 2)                # Pierwszy wykres - pokazanie okna na sygnale
     plt.plot(signal)                    # Drugi wykres dla wartości sygnału
@@ -138,7 +182,10 @@ def plot_combined(signal_fft, sampling_frequency, signal, window_ranges, title, 
 
     if show_plot:                       # Jeśli trzeba pokaż wykres
         plt.show()
-    if save_path != None:               # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+    if save_path != None:                           # Jeśli podana ścieżka do pliku, zapisz wykres pod nią
+        output_dir = os.path.dirname(save_path)     # Stwórz folder jeśli nie istnieje
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         plt.savefig(save_path)
     plt.close()                         # Zamknięcie figury
 
@@ -161,20 +208,21 @@ def calculate_signal_energy(signal):
         total_energy += value ** 2      # Dodanie energii dla kolejnej próbki 
     return total_energy
 
-def calculate_fft(signal):
+def calculate_fft(signal, frequency):
     """
     #### Summary
     Funkcja obliczająca fft.
     
     #### Args:
      - signal (numpy.ndarray): Dane sygnału.
+     - frequency (float): Częstotliwość sygnału.
 
     #### Returns:
-     - list: Obliczona wartość FFT.
+     - touple: (Obliczona wartość FFT, wektor częstotliwości dla obliczonego FFT.
     """
-    return fft(signal)
+    return (fft(signal), fftfreq(len(signal), d=1/frequency))
 
-def calculate_windowed_fft(signal, window_size, step_size):
+def calculate_windowed_fft(signal, window_size, step_size, frequency):
     """
     #### Summary
     Funkcja obliczająca fft w sposób okienkowy ze stałą szerokością okna.
@@ -200,11 +248,11 @@ def calculate_windowed_fft(signal, window_size, step_size):
         if start_point >= signal_length - 1:                # Jeśli punk początkowy trafił na koniec sygnału, wóczas kończymy
             break
         data = signal[start_point : end_point]              # Odczytanie danych dla wybranego zakresu
-        fft_windows.append(calculate_fft(data))             # Obliczenie FFT dla wybranego zakresu
+        fft_windows.append(calculate_fft(data, frequency))             # Obliczenie FFT dla wybranego zakresu
         window_ranges.append((start_point, end_point))      # Dodanie zakresów do listy zakresów 
     return fft_windows, window_ranges
 
-def calculate_adaptive_windowed_fft(signal, window_min, window_max, step_size):
+def calculate_adaptive_windowed_fft(signal, window_min, window_max, step_size, frequency):
     """
     #### Summary
     Funkcja obliczająca fft w sposób okienkowy z adaptacyjną szerokością okna.
@@ -216,7 +264,7 @@ def calculate_adaptive_windowed_fft(signal, window_min, window_max, step_size):
      - step_size (int): Krok okna w każdej iteracji.
 
     #### Returns:
-     - list: Obliczona wartość FFT.
+     - list: Obliczona wartość FFT oraz częstotliwości.
      - list of touples: Lista zawierająca krotki z punktami granicznymi okna.
     """
     signal_length = len(signal)                         # Długość sygnału
@@ -240,7 +288,7 @@ def calculate_adaptive_windowed_fft(signal, window_min, window_max, step_size):
             finish = True                               # Osiągnęliśmy koniec sygnału więc koniec przetwarzania    
         data = signal[start_point : end_point]          # Odczytanie danych dla wybranego zakresu
         window_ranges.append((start_point, end_point))  # Dodanie zakresów do listy zakresów 
-        fft_windows.append(calculate_fft(data))         # Obliczenie FFT dla wybranego zakresu
+        fft_windows.append(calculate_fft(data, frequency))         # Obliczenie FFT dla wybranego zakresu
         energy = calculate_signal_energy(data)          # Oblicz energię dla danego zakresu
         
         if energy < 0.95 * previous_energy:             # Sprawdzenie czy energia sygnału się zmniejszyła
@@ -258,6 +306,9 @@ def calculate_adaptive_windowed_fft(signal, window_min, window_max, step_size):
     return fft_windows, window_ranges
 
 def create_gif(image_folder, output_path, duration=0.5):
+    output_dir = os.path.dirname(output_path)                                   # Stwórz folder jeśli nie istnieje
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     files = [f for f in os.listdir(image_folder) if f.endswith('.png')]         # Odczytanie listy plików w folderze - są to zdjęcia z nazwą jak: 0.png
     files.sort(key=lambda f: int(os.path.splitext(f)[0]))                       # Posortowanie plików według nazwy - aby zachować kolejność przy generacji GIF'a
     images = [Image.open(os.path.join(image_folder, file)) for file in files]   # Wczytanie obrazów
@@ -269,13 +320,45 @@ def create_gif(image_folder, output_path, duration=0.5):
         loop=0
     )
 
+def calculate_power_spectral_density(signal, frequency):
+    """
+    #### Summary
+    Funkcja obliczająca PSD (power spectral density)
+    
+    #### Args:
+     - signal (numpy.ndarray): Dane sygnału.
+     - frequency (float): Częstotliwość próbkowania.
+
+    #### Returns:
+     - tuple: Obliczona wartość PSD oraz odpowiadająca jej częstotliwość.
+    """
+    fft, freq = calculate_fft(signal, frequency)        # Obliczam fft
+    N = len(signal)                                     # Obliczam długość sygnału
+    psd = 1/(N * frequency) * square(abs(fft))          # Obliczam PSD jako: PSD = A^2/(N*fs), gdzie N to długość sygnału, z którego liczone jest FFT, a fs to to częstotliwość próbkowania
+    return (psd, freq)
+
 def main():
     """
     #### Summary
     Główna funkcja programu.
     """
+    for_all = False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "all":
+            print("Uruchamianie analizy dla wszystkich sygnałów.")
+            for_all = True
+        else:
+            print("""Błędny argument. 
+Aby uruchomić analizę wszystkich sygnałów uruchom skrypt jako:
+ >>> python signal_processing.py all
+Dla analizy pojedynczego sygnału uruchom skrypt jako
+ >>> python signal_processing.py""")
+            exit()
+    else:
+        print("Uruchomianie analizy pojedynczego sygnału. ")
+
     # # Ścieżka do pliku z danymi
-    file_path = 'data/2aHc688_ICP.pkl'
+    file_path = './data/2aHc688_ICP.pkl'
     
     # Docelowa częstotliwość w Hz
     target_ft = 100.0
@@ -285,65 +368,94 @@ def main():
     
     # Załadowanie danych
     data = load_data(file_path)
-    
-    # Wyodrębnienie informacji o sygnale
-    signal_1_fs = data[1]['fs']
-    signal_1_data = data[1]['signal']
-    signal_1_time_start = data[1]['time_start']
-    
-    # Obliczenie oryginalnych znaczników czasowych
-    print("Obliczanie znaczników czasowych.")
-    current_timestamps = calculate_timestamps(signal_1_data, signal_1_time_start, signal_1_fs)
-    
-    # Interpolacja sygnału
-    print("Interpolowanie sygnału.")
-    target_timestamps, signal_1_interpolated = interpolate_signal(signal_1_data, current_timestamps, target_period)
+    if data == None:
+        print("Nie znaleziono pliku z danymi.")
+        exit()
 
-    # Obliczenie klasycznego fft
-    print("Obliczenie FFT.")
-    signal_fft = calculate_fft(signal_1_interpolated)
+    # Pętla w celu analizy wszystkich sygnałów
+    for count, single_signal in enumerate(data):
+        # Wyodrębnienie informacji o sygnale 
+        signal_1_fs = single_signal['fs'] # częstotliwość próbkowania
+        signal_1_data = single_signal['signal'] # dane sygnału
+        signal_1_time_start = single_signal['time_start'] # czas początkowy
 
-    # Obliczenie okienkowego fft
-    print("Obliczenie okienkowego FFT.")
-    window_size = 4069 * 3
-    step_size = 4069
-    windowed_fft, window_ranges = calculate_windowed_fft(signal_1_data, window_size, step_size)
+        print("-----------------------------------------------------------")
+        print("Analizowanie kolejnego sygnału. Odczytane parametry sygnału:")
+        print("- signal sampling frequency: " + str(signal_1_fs) + " Hz")
+        print("- signal samples count N: " + str(len(signal_1_data)))
+        print("- signal start time: " + str(signal_1_time_start))
+        
+        # Obliczenie oryginalnych znaczników czasowych
+        print("Obliczanie znaczników czasowych.")
+        current_timestamps = calculate_timestamps(signal_1_data, signal_1_time_start, signal_1_fs)
+        
+        # Interpolacja sygnału
+        print("Interpolowanie sygnału.")
+        target_timestamps, signal_1_interpolated = interpolate_signal(signal_1_data, current_timestamps, target_period)
 
-    # Zapisz poszczególne okna jako obrazy
-    print("Tworzenie wykresów dla okienkowego FFT.", end='', flush=True)
-    for i in range(len(windowed_fft)):
-        print(".", end='', flush=True)
-        plot_combined(windowed_fft[i], target_ft, signal_1_interpolated, window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/window/{i}.png")
+        # Obliczenie klasycznego fft
+        print("Obliczenie FFT.")
+        signal_fft, signal_fft_freq = calculate_fft(signal_1_interpolated, target_ft)
 
-    # Stworzenie gif'a na podstawie stworzonych wykresów dla okienkowego FFT
-    print("\nTworzenie GIF dla okienkowego FFT.")
-    create_gif("./img/window/", "./resoult/window_fft.gif", 0.1)
+        # Obliczenie okienkowego fft
+        print("Obliczenie okienkowego FFT.")
+        window_size = 2048 * 3
+        step_size = 2048
+        windowed_fft, window_ranges = calculate_windowed_fft(signal_1_data, window_size, step_size, target_ft)
 
-    # Obliczenie adaptacyjnego okienkowego fft
-    print("Obliczenie adaptacyjnego okienkowego FFT.")
-    window_min_size = 4096 * 1
-    window_max_size = 4096 * 3
-    step_size = 4096
-    adaptive_windowed_fft, adaptive_window_ranges = calculate_adaptive_windowed_fft(signal_1_data, window_min_size, window_max_size, window_max_size)
+        # Zapisz poszczególne okna jako obrazy
+        print("Tworzenie wykresów dla okienkowego FFT.", end='', flush=True)
+        for i in range(len(windowed_fft)):
+            print(".", end='', flush=True)
+            plot_combined(windowed_fft[i], target_ft, signal_1_interpolated, window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/{count}/window/{i}.png")
 
-    # Zapisz poszczególne okna jako obrazy
-    print("Tworzenie wykresów dla adaptacyjnego okienkowego FFT.", end='', flush=True)
-    for i in range(len(adaptive_windowed_fft)):
-        print(".", end='', flush=True)
-        plot_combined(adaptive_windowed_fft[i], target_ft, signal_1_interpolated, adaptive_window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/adaptive_window/{i}.png")
+        # Stworzenie gif'a na podstawie stworzonych wykresów dla okienkowego FFT
+        print("\nTworzenie GIF dla okienkowego FFT.")
+        create_gif(f"./img/{count}/window/", f"./resoult/{count}/window_fft.gif", 0.1)
 
-    # Stworzenie gif'a na podstawie stworzonych wykresów dla adaptacyjnego okienkowego FFT
-    print("\nTworzenie GIF dla adaptacyjnego okienkowego FFT.")
-    create_gif("./img/adaptive_window/", "./resoult/adaptive_window_fft.gif", 0.1)
+        # Obliczenie adaptacyjnego okienkowego fft
+        print("Obliczenie adaptacyjnego okienkowego FFT.")
+        window_min_size = 2048 * 1
+        window_max_size = 2048 * 3
+        step_size = 2048
+        adaptive_windowed_fft, adaptive_window_ranges = calculate_adaptive_windowed_fft(signal_1_data, window_min_size, window_max_size, window_max_size, target_ft)
 
-    # Rysujowanie oryginalnego sygnału
-    plot_signal(current_timestamps, signal_1_data, "Oryginal Signal 1 in time domain", "time", "value", False, "./resoult/oryginal_signal.png")
-    
-    # Rysujowanie interpolowanego sygnału
-    plot_signal(target_timestamps, signal_1_interpolated, "Interpolated Signal 1 in time domain", "time", "value", False, "./resoult/interpolated_signal.png")
-    
-    # Rysujowanie FFT interpolowanego sygnału
-    plot_fft(signal_fft, target_ft, "Interpolated Signal 1 in frequency domain", "frequency", "value", False, "./resoult/classic_fft.png")
+        # Zapisz poszczególne okna jako obrazy
+        print("Tworzenie wykresów dla adaptacyjnego okienkowego FFT.", end='', flush=True)
+        for i in range(len(adaptive_windowed_fft)):
+            print(".", end='', flush=True)
+            plot_combined(adaptive_windowed_fft[i], target_ft, signal_1_interpolated, adaptive_window_ranges[i], "Oryginal Signal 1 in time domain", "frequency", "value", False, f"./img/{count}/adaptive_window/{i}.png")
+
+        # Stworzenie gif'a na podstawie stworzonych wykresów dla adaptacyjnego okienkowego FFT
+        print("\nTworzenie GIF dla adaptacyjnego okienkowego FFT.")
+        create_gif(f"./img/{count}/adaptive_window/", f"./resoult/{count}/adaptive_window_fft.gif", 0.1)
+
+        # Rysujowanie oryginalnego sygnału
+        plot_signal(current_timestamps, signal_1_data, "Oryginal Signal 1 in time domain", "time", "value", False, f"./resoult/{count}/oryginal_signal.png")
+        
+        # Rysujowanie interpolowanego sygnału
+        plot_signal(target_timestamps, signal_1_interpolated, "Interpolated Signal 1 in time domain", "time", "value", False, f"./resoult/{count}/interpolated_signal.png")
+
+        # Obliczam PSD
+        psd, freq_psd = calculate_power_spectral_density(signal_1_interpolated, target_ft) # obliczam psd dla interpolowanego sygnału oraz częstotliwość z nim związaną
+        plot_psd(psd, freq_psd, target_ft, [0, 0.06], [0, 40], "Wykres PSD dla intepolowanego sygnału", "Częstotliwość [Hz]", "PSD value", True, f"./resoult/{count}/PSD.png")
+
+        # Szukam indeksów w tablicy odpowiadającym początkowi i końcowi zakresu dla poniższych wartości określająctycych zakres
+        psd_min = 0.005
+        psd_max = 0.05
+        psd_min_sample_number = where(freq_psd >= psd_min)[0][0]
+        psd_max_sample_number = where(freq_psd <= psd_max)[0][0]
+        trapz_integration_resoult = trapz(psd[psd_min_sample_number:psd_max_sample_number], freq_psd[psd_min_sample_number:psd_max_sample_number])
+        print("Pole pod krzywą w zakresie [" + str(psd_min) + ", " + str(psd_max) + "] wynosi: " + str(trapz_integration_resoult), flush=True)
+
+
+        
+        # Rysujowanie FFT interpolowanego sygnału
+        # plot_fft(signal_fft, target_ft, "Interpolated Signal 1 in frequency domain", "frequency", "value", False, f"./resoult/{count}/classic_fft.png")
+
+        # Jeśli analiza jest tylko dla jednego sygnału, wóczas od razu kończymy
+        if not for_all:     
+            break
 
 # Uruchomienie głównej funkcji skryptu
 if __name__ == "__main__":
