@@ -1,0 +1,3 @@
+[submodule "ICMPWaveformClassificationPlugin"]
+	path = ICMPWaveformClassificationPlugin
+	url = https://github.com/CMataczynski/ICMPWaveformClassificationPlugin
