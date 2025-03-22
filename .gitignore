@@ -1,3 +1,4 @@
 data
-img/window
-img/adaptive_window
+img
+resoult
+__pycache__

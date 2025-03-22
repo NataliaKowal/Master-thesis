@@ -4,7 +4,7 @@ This is my master thesis (in progress).
 
 ## Title
 
-> [!IMPORTANT]
+> [!INFO]
 > Joint analysis of slow waves and pulse waveform of intracranial pressure
 
 # Project Description
@@ -15,50 +15,32 @@ The file I worked on, "2aHc688_ICP.pkl," contains 172 signals and is too large t
 
 ## Requirements
 
-To run this code, you need the following Python libraries:
+> [!IMPORTANT]
+> You need to init and update git submodules
 
-- pickle
-- matplotlib
-- numpy
+```sh
+git submodule update --init --recursive
+```
 
-You can install the missing libraries using pip:
+To use this code use anaconda environment with installed required packages.
 
-    pip install matplotlib numpy
+Create new anaconda environment using Anaconda Prompt and commands
+```sh
+cd ICMPWaveformClassificationPlugin
+conda env create -f environment.yml
+```
 
-## Usage Instructions
+Activate environment
+```sh
+conda activate ICMPlugin
+```
 
-Make sure you have the file 2aHc688_ICP.pkl in the data directory.
-Run the Python script:
+Install required packages
+```sh
+pip install -r requirements-cpu.txt
+```
 
-    python main.py
-
-## Script Description
-
-<strong>1.  Loading Data:</strong>
-The script loads data from the 2aHc688_ICP.pkl file using the pickle library.
-
-<strong>2. Signal Processing: </strong>
-It retrieves signal data, sampling frequency, error flag, and start time.
-Calculates the sampling period and signal end time.
-Creates time arrays for the original and interpolated signals.
-Interpolates the signal to the desired sampling frequency (100 Hz).
-Performs a Fourier transform on the interpolated signal.
-
-<strong> 3. Visualization: </strong>
-Plots the original time-domain signal.
-Plots the interpolated time-domain signal.
-Plots the magnitude of the Fourier transform of the interpolated signal in the frequency domain.
-
-## Sample Results
-
-### <strong> FFT</strong>
-
-![fft](./img/fft.png)
-
-### <strong> Time-Domain Signal </strong>
-
-![Figure_1](./img/Figure_1.png)
-
-### <strong> Interpolated Time-Domain Signal </strong>
-
-![Figure_2](./img/Figure_2.png)
+To run scrip
+```sh
+python signal_processing.py
+```
