@@ -4,7 +4,7 @@ This is my master thesis (in progress).
 
 ## Title
 
-> [!INFO]
+> [!NOTE]
 > Joint analysis of slow waves and pulse waveform of intracranial pressure
 
 # Project Description
